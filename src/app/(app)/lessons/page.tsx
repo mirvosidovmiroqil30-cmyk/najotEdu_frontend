@@ -16,7 +16,7 @@ const empty = { groupId: 0, teacherId: 0, topic: "", description: "", status: "A
 export default function LessonsPage() {
   const { user, hasRole } = useAuth();
   const { data, loading, error, reload } = useApiList<Lesson>("/lessons");
-  const { data: groups } = useApiList<Group>(hasRole("SUPERADMIN", "ADMIN", "TEACHER") ? "/groups" : null);
+  const { data: groups } = useApiList<Group>((open && hasRole("SUPERADMIN", "ADMIN", "TEACHER")) ? "/groups" : null);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Lesson | null>(null);
   const [form, setForm] = useState(empty);

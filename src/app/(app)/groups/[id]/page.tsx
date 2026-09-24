@@ -81,15 +81,16 @@ type LessonWithVideos = Lesson & {
 function GroupDarsliklariTab({
   groupId, lessons, reloadLessons, onCreateLesson, router,
 }: {
-  groupId: number; lessons: Lesson[];
+  groupId: number; lessons: LessonWithVideos[];
   reloadLessons: () => Promise<void>;
   onCreateLesson: () => void;
   router: ReturnType<typeof useRouter>;
 }) {
   const [subTab, setSubTab] = useState<SubTab>("homework");
-  const { data: homeworks } = useApiList<HomeworkWithAnswers>(`/homeworks?groupId=${groupId}`);
-  const { data: lessonsWithVideos } = useApiList<LessonWithVideos>(`/lessons?groupId=${groupId}`);
-  const { data: exams } = useApiList<ExamItem>(`/exams?groupId=${groupId}`);
+  const { data: homeworks } = useApiList<HomeworkWithAnswers>(subTab === "homework" ? `/homeworks?groupId=${groupId}` : null);
+  const { data: exams } = useApiList<ExamItem>(subTab === "exams" ? `/exams?groupId=${groupId}` : null);
+  // parent'dan kelgan lessons qayta fetch qilinmaydi
+  const lessonsWithVideos = lessons;
 
   const subTabs = [
     { key: "homework" as SubTab, label: "Uyga vazifa", icon: <AssignmentRounded fontSize="small" /> },
@@ -437,8 +438,8 @@ export default function GroupDetailPage({
   const { data: students, loading: studentsLoading, reload: reloadStudents } =
     useApiList<GroupStudent>(`/groups/${groupId}/students`);
   const { data: lessons, reload: reloadLessons } =
-    useApiList<Lesson>(`/lessons?groupId=${groupId}`);
-  const { data: allUsers } = useApiList<User>(canManage ? "/users" : null);
+    useApiList<LessonWithVideos>(`/lessons?groupId=${groupId}`);
+  const { data: allUsers, reload: reloadUsers } = useApiList<User>(canManage ? "/users" : null, { immediate: false });
 
   // Dars yaratish drawer
   const [lessonDrawer, setLessonDrawer] = useState(false);
@@ -535,8 +536,8 @@ export default function GroupDetailPage({
   if (!group) return null;
 
   const teachers: TeacherRow[] = group.groupTeachers ?? [];
-  const teachers_users = allUsers.filter((u) => u.role === "TEACHER");
-  const student_users = allUsers.filter((u) => u.role === "STUDENT");
+  const teachers_users = allUsers ? allUsers.filter((u) => u.role === "TEACHER") : [];
+  const student_users = allUsers ? allUsers.filter((u) => u.role === "STUDENT") : [];
 
   return (
     <div className="space-y-4">
@@ -587,7 +588,8 @@ export default function GroupDetailPage({
                   <Button
                     size="small"
                     startIcon={<PersonAddRounded />}
-                    onClick={() => {
+                    onClick={async () => {
+                      if (!allUsers || allUsers.length === 0) await reloadUsers();
                       setTeacherForm({ teacherId: teachers_users[0]?.id ?? 0, status: "ACTIVE" });
                       setTeacherDialog(true);
                     }}
@@ -751,7 +753,11 @@ export default function GroupDetailPage({
               <Typography variant="subtitle2" fontWeight={700}>O'quvchilar ({students.length})</Typography>
               {canManage && (
                 <Button variant="contained" size="small" startIcon={<PersonAddRounded />}
-                  onClick={() => { setStudentForm({ studentId: student_users[0]?.id ?? 0, status: "ACTIVE" }); setStudentDialog(true); }}>
+                  onClick={async () => {
+                    if (!allUsers || allUsers.length === 0) await reloadUsers();
+                    setStudentForm({ studentId: student_users[0]?.id ?? 0, status: "ACTIVE" });
+                    setStudentDialog(true);
+                  }}>
                   Talaba qo'shish
                 </Button>
               )}
@@ -834,6 +840,7 @@ export default function GroupDetailPage({
           <TextField
             select label="O'qituvchi" value={teacherForm.teacherId}
             onChange={(e) => setTeacherForm({ ...teacherForm, teacherId: Number(e.target.value) })}
+            disabled={!allUsers || allUsers.length === 0}
           >
             {teachers_users.map((u) => (
               <MenuItem key={u.id} value={u.id}>
@@ -864,6 +871,7 @@ export default function GroupDetailPage({
           <TextField
             select label="Talaba" value={studentForm.studentId}
             onChange={(e) => setStudentForm({ ...studentForm, studentId: Number(e.target.value) })}
+            disabled={!allUsers || allUsers.length === 0}
           >
             {student_users.map((u) => (
               <MenuItem key={u.id} value={u.id}>

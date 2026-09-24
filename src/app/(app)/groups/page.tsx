@@ -50,13 +50,15 @@ const empty = {
 export default function GroupsPage() {
   const { hasRole } = useAuth();
   const { data, loading, error, reload } = useApiList<Group>("/groups");
-  const { data: courses } = useApiList<Course>("/courses");
-  const { data: rooms } = useApiList<Room>("/rooms");
-  const { data: allUsers } = useApiList<User>("/users");
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Group | null>(null);
   const [form, setForm] = useState(empty);
+
+  // Drawer ochilganda yuklanadi
+  const { data: courses } = useApiList<Course>(open ? "/courses" : null);
+  const { data: rooms } = useApiList<Room>(open ? "/rooms" : null);
+  const { data: teachers } = useApiList<User>(open ? "/users?role=TEACHER" : null);
   const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [saving, setSaving] = useState(false);
@@ -64,11 +66,9 @@ export default function GroupsPage() {
   const [checkingRoom, setCheckingRoom] = useState(false);
   const canManage = hasRole("SUPERADMIN", "ADMIN");
 
-  const teachers = allUsers.filter((u) => u.role === "TEACHER");
-
   function openCreate() {
     setEditing(null);
-    setForm({ ...empty, courseId: courses[0]?.id ?? 0, roomId: rooms[0]?.id ?? 0 });
+    setForm({ ...empty, courseId: courses?.[0]?.id ?? 0, roomId: rooms?.[0]?.id ?? 0 });
     setFormError("");
     setRoomWarning("");
     setOpen(true);
@@ -370,7 +370,7 @@ export default function GroupsPage() {
         </TextField>
 
         {/* O'qituvchi biriktirish — faqat yangi yaratishda */}
-        {!editing && teachers.length > 0 && (
+        {!editing && teachers && teachers.length > 0 && (
           <Box>
             <FormLabel sx={{ fontWeight: 600, color: "text.primary", mb: 1, display: "block" }}>
               O'qituvchilarni biriktirish (ixtiyoriy)

@@ -265,16 +265,19 @@ export default function StudentLessonDetailPage({
               </Box>
 
               {homework.fileUrl ? (
-                <Typography
-                  variant="body2"
-                  color="primary"
+                <Box
                   component="a"
-                  href={homework.fileUrl}
+                  href={`${API_URL}${homework.fileUrl}`}
                   target="_blank"
-                  className="break-all"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 p-3 w-fit"
+                  sx={{ color: "#2563eb", textDecoration: "none", "&:hover": { bgcolor: "#F0F9FF" } }}
                 >
-                  {homework.fileUrl}
-                </Typography>
+                  <InsertDriveFileRounded fontSize="small" sx={{ color: "#F5C400" }} />
+                  <Typography variant="body2">
+                    {homework.fileUrl.split("/").pop() ?? "Fayl"}
+                  </Typography>
+                </Box>
               ) : (
                 <Typography variant="body2" color="text.secondary">
                   {homework.title}
@@ -324,15 +327,16 @@ export default function StudentLessonDetailPage({
                   </Box>
                   
                   {answer.fileUrl ? (
-                    <Box className="flex items-center gap-2 rounded-lg border border-gray-200 p-3">
-                      <InsertDriveFileRounded fontSize="small" color="action" />
-                      <Typography
-                        variant="body2"
-                        component="a"
-                        href={answer.fileUrl}
-                        target="_blank"
-                        color="primary"
-                      >
+                    <Box
+                      component="a"
+                      href={`${API_URL}${answer.fileUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg border border-gray-200 p-3"
+                      sx={{ color: "#2563eb", textDecoration: "none", "&:hover": { bgcolor: "#F0F9FF" } }}
+                    >
+                      <InsertDriveFileRounded fontSize="small" sx={{ color: "#F5C400" }} />
+                      <Typography variant="body2">
                         {answer.fileUrl.split("/").pop() ?? answer.fileUrl}
                       </Typography>
                     </Box>

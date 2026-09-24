@@ -43,11 +43,12 @@ const empty = {
 
 export default function TeachersPage() {
   const { hasRole } = useAuth();
-  const { data: allUsers, loading, error, reload } = useApiList<User>("/users");
-  const { data: groups } = useApiList<Group>("/groups");
+  const { data: teachers, loading, error, reload } = useApiList<User>("/users?role=TEACHER");
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
+
+  const { data: groups } = useApiList<Group>(open ? "/groups" : null);
   const [form, setForm] = useState(empty);
   const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -56,8 +57,6 @@ export default function TeachersPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canManage = hasRole("SUPERADMIN", "ADMIN");
-
-  const teachers = allUsers.filter((u) => u.role === "TEACHER");
 
   function openCreate() {
     setEditing(null);
@@ -107,6 +106,7 @@ export default function TeachersPage() {
         : [...prev.groupIds, id],
     }));
   }
+
 
   async function save() {
     setFormError("");
@@ -234,6 +234,7 @@ export default function TeachersPage() {
         saving={saving || uploading}
       >
         {formError ? <Alert severity="error">{formError}</Alert> : null}
+
 
         {/* Rasm yuklash */}
         <Box className="flex flex-col items-center gap-2">

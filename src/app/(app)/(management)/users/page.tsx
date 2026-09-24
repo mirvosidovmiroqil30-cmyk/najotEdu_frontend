@@ -19,16 +19,13 @@ const empty = {
 
 export default function UsersPage() {
   const { hasRole } = useAuth();
-  const { data, loading, error, reload } = useApiList<User>("/users");
+  const { data: staff, loading, error, reload } = useApiList<User>("/users?roles=ADMIN,TEACHER,SUPERADMIN");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(empty);
   const [formError, setFormError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const canManage = hasRole("SUPERADMIN", "ADMIN");
-
-  // Faqat ADMIN va TEACHER larni ko'rsatish
-  const staff = data.filter((u) => u.role === "ADMIN" || u.role === "TEACHER" || u.role === "SUPERADMIN");
 
   async function createUser() {
     setFormError("");

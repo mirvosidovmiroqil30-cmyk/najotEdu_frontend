@@ -201,7 +201,7 @@ const GroupDarsliklariTab = memo(function GroupDarsliklariTab({
   router,
 }: {
   groupId: number;
-  lessons: Lesson[];
+  lessons: LessonWithVideos[];
   reloadLessons: () => Promise<void>;
   onCreateLesson: () => void;
   router: ReturnType<typeof useRouter>;
@@ -210,12 +210,11 @@ const GroupDarsliklariTab = memo(function GroupDarsliklariTab({
   const { data: homeworks } = useApiList<HomeworkWithAnswers>(
     subTab === "homework" ? `/homeworks?groupId=${groupId}` : null,
   );
-  const { data: lessonsWithVideos } = useApiList<LessonWithVideos>(
-    subTab === "videos" ? `/lessons?groupId=${groupId}` : null,
-  );
   const { data: exams } = useApiList<ExamItem>(
     subTab === "exams" ? `/exams?groupId=${groupId}` : null,
   );
+  // lessonsWithVideos — parent'dan kelgan lessons ishlatiladi, qayta fetch yo'q
+  const lessonsWithVideos = lessons;
 
   const videoRows = useMemo(() => {
     const rows: Array<{ id: number; lessonTopic: string; originalName: string; sizeMb: number; createdAt: string | null }> = [];
@@ -847,7 +846,7 @@ export default function TeacherGroupDetailPage({
   const [groupError, setGroupError] = useState("");
 
   const { data: students } = useApiList<GroupStudent>(`/groups/${groupId}/students`);
-  const { data: lessons, reload: reloadLessons } = useApiList<Lesson>(`/lessons?groupId=${groupId}`);
+  const { data: lessons, reload: reloadLessons } = useApiList<LessonWithVideos>(`/lessons?groupId=${groupId}`);
   const teachers = useMemo(() => group?.groupTeachers ?? [], [group?.groupTeachers]);
   const summaryItems = useMemo(
     () => ({

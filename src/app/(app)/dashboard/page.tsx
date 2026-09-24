@@ -29,7 +29,7 @@ import { useRouter } from "next/navigation";
 import { apiGet } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { LoadingState } from "@/components/ui";
-import type { Group, Lesson, User } from "@/lib/types";
+import type { Group, User } from "@/lib/types";
 
 type Stats = {
   activeStudents: number;
@@ -94,44 +94,25 @@ export default function DashboardPage() {
     archived: 0,
   });
   const [groups, setGroups] = useState<Group[]>([]);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [users, groupsData, lessonsData, archivedData] = await Promise.all([
-          apiGet<User[]>("/users"),
+        const [groupsData, usersStats] = await Promise.all([
           apiGet<Group[]>("/groups"),
-          apiGet<Lesson[]>("/lessons"),
-          Promise.all([
-            apiGet<{ id: number }[]>("/archive/users"),
-            apiGet<{ id: number }[]>("/archive/courses"),
-            apiGet<{ id: number }[]>("/archive/rooms"),
-            apiGet<{ id: number }[]>("/archive/groups"),
-            apiGet<{ id: number }[]>("/archive/lessons"),
-            apiGet<{ id: number }[]>("/archive/homeworks"),
-            apiGet<{ id: number }[]>("/archive/attendances"),
-          ]).then((results) => results.reduce((sum, arr) => sum + arr.length, 0)),
+          apiGet<{ activeStudents: number; frozenUsers: number; archivedCount: number }>("/stats/dashboard"),
         ]);
 
-        const activeStudents = users.filter(
-          (u) => u.role === "STUDENT" && u.status === "ACTIVE",
-        ).length;
-
-        const activeGroups = groupsData.filter((g) => g.status === "ACTIVE").length;
-        const frozenUsers = users.filter((u) => u.status === "FREEZE").length;
-
         setStats({
-          activeStudents,
-          groups: activeGroups,
+          activeStudents: usersStats.activeStudents,
+          groups: groupsData.filter((g) => g.status === "ACTIVE").length,
           currentPayments: 0,
           debtors: 0,
-          expiring: frozenUsers,
-          archived: archivedData,
+          expiring: usersStats.frozenUsers,
+          archived: usersStats.archivedCount,
         });
         setGroups(groupsData);
-        setLessons(lessonsData);
       } catch {
         /* silent */
       } finally {

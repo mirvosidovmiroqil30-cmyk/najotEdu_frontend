@@ -19,7 +19,7 @@ const empty = {
 
 export default function StudentsPage() {
   const { hasRole } = useAuth();
-  const { data: allUsers, loading, error, reload } = useApiList<User>("/users");
+  const { data: students, loading, error, reload } = useApiList<User>("/users?role=STUDENT");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
   const [form, setForm] = useState(empty);
@@ -27,8 +27,6 @@ export default function StudentsPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [saving, setSaving] = useState(false);
   const canManage = hasRole("SUPERADMIN", "ADMIN");
-
-  const students = allUsers.filter((u) => u.role === "STUDENT");
 
   function openCreate() {
     setEditing(null);
