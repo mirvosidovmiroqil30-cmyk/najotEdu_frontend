@@ -205,7 +205,7 @@ export function SideDrawer({
       {/* Header */}
       <Box className="flex items-start justify-between p-5">
         <Box>
-          <Typography variant="h6" fontWeight={700}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>
             {title}
           </Typography>
           {subtitle && (

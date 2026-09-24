@@ -467,7 +467,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <ChevronLeftRounded fontSize="small" />
               </IconButton>
-              <Typography fontWeight={700} fontSize={16}>
+              <Typography sx={{ fontWeight: 700, fontSize: 16 }}>
                 Menu
               </Typography>
             </Box>
